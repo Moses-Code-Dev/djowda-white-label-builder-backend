@@ -1,10 +1,27 @@
-name: White Label - Init & Clone Test
+name: White Label - Full Process (Init → Clone → Rename → Push)
 
 on:
-  workflow_dispatch:  # Manual trigger for testing
+  workflow_dispatch:
+    inputs:
+      old-app-name:
+        description: 'Old App Name'
+        required: true
+        default: 'djowda-white-label-user-base'
+      new-app-name:
+        description: 'New App Name'
+        required: true
+        default: 'test'
+      old-package:
+        description: 'Old Package Name'
+        required: true
+        default: 'com.djowda.djowda_white_label_user_base'
+      new-package:
+        description: 'New Package Name'
+        required: true
+        default: 'com.djowda.test'
 
 jobs:
-  test-process:
+  white-label-process:
     runs-on: ubuntu-latest
 
     steps:
@@ -35,3 +52,33 @@ jobs:
       run: |
         echo "==== Verifying generated content ===="
         ls -R generated
+
+    - name: Run android_project_renamer.py (Rename Project & Package)
+      run: |
+        echo "==== Running android_project_renamer.py ===="
+        python3 scripts/android_project_renamer.py \
+          --project "./generated/user-app" \
+          --old-app-name "${{ github.event.inputs.old-app-name }}" \
+          --new-app-name "${{ github.event.inputs.new-app-name }}" \
+          --old-package "${{ github.event.inputs.old-package }}" \
+          --new-package "${{ github.event.inputs.new-package }}"
+
+    - name: Verify final generated folder
+      run: |
+        echo "==== Verifying final generated content ===="
+        ls -R generated
+
+    - name: Push renamed project to output directory
+      run: |
+        echo "==== Preparing renamed project for commit & push ===="
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        mkdir -p output
+        cp -r generated/* output/
+        cd output
+        git init
+        git remote add origin https://github.com/${{ github.repository }}.git
+        git checkout -b renamed-output
+        git add .
+        git commit -m "Add renamed project to output"
+        git push -f origin renamed-output
