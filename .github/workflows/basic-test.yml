@@ -1,14 +1,14 @@
-name: Test Init Repos Script
+name: White Label - Init & Clone Test
 
 on:
   workflow_dispatch:  # Manual trigger for testing
 
 jobs:
-  test-init-repos:
+  test-process:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repo
+    - name: Checkout Repository
       uses: actions/checkout@v3
 
     - name: Set up Python
@@ -16,12 +16,22 @@ jobs:
       with:
         python-version: '3.x'
 
-    - name: Run init_repos.py
+    - name: Run init_repos.py (Initialize Base Artifacts)
       run: |
-        echo "Running init_repos.py script..."
+        echo "==== Running init_repos.py ===="
         python3 scripts/init_repos.py
 
-    - name: List base_artifact directory
+    - name: Verify base_artifact folder
       run: |
-        echo "Verifying cloned repositories..."
+        echo "==== Verifying base_artifact content ===="
         ls -R base_artifact
+
+    - name: Run clone_to_generated.py (Clone to Generated)
+      run: |
+        echo "==== Running clone_to_generated.py ===="
+        python3 scripts/clone_to_generated.py
+
+    - name: Verify generated folder
+      run: |
+        echo "==== Verifying generated content ===="
+        ls -R generated
