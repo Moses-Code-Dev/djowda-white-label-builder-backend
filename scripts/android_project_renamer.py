@@ -82,9 +82,36 @@ class AndroidProjectRenamer:
         else:
             self.logger.warning(f"Warning: {strings_xml} not found!")
             
+    def update_settings_gradle(self):
+        """Update project name in settings.gradle files"""
+        settings_gradle_kts = self.project_path / 'settings.gradle.kts'
+        settings_gradle = self.project_path / 'settings.gradle'
+        
+        for settings_file in [settings_gradle_kts, settings_gradle]:
+            if settings_file.exists():
+                content = settings_file.read_text(encoding='utf-8')
+                original = content
+                
+                # Update rootProject.name
+                new_content = re.sub(
+                    r'rootProject\.name\s*=\s*["\'].*?["\']',
+                    f'rootProject.name = "{self.new_app_name}"',
+                    content
+                )
+                
+                if original != new_content:
+                    settings_file.write_text(new_content, encoding='utf-8')
+                    self.logger.info(f"✓ Updated project name in {settings_file}")
+                    self.changes['gradle_files'].append(f"{settings_file} (project name updated)")
+                else:
+                    self.logger.info(f"No changes needed in {settings_file}")
+
     def rename_package_in_gradle(self):
         """Update package name and namespace in build.gradle"""
         self.logger.info("Starting package name and namespace update in Gradle files...")
+        
+        # Update settings.gradle files first
+        self.update_settings_gradle()
         
         # Check for regular Gradle file
         gradle_file = self.app_dir / 'build.gradle'
