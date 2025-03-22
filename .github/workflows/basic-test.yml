@@ -1,21 +1,22 @@
-name: Test Automation
+name: Basic Test Workflow
 
+# Manual trigger
 on:
-  workflow_dispatch:  # Manual trigger via GitHub UI
+  workflow_dispatch:
 
 jobs:
-  test-job:
+  test_job:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repo
+      - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Say Hello
-        run: echo "🚀 Hello Djowda Automation World! Workflow is running fine."
+      - name: Print Hello Message
+        run: echo "Hello, Djowda Automation is working!"
 
-      - name: List repo files
+      - name: List Files
         run: ls -la
 
-      - name: Print current branch
-        run: { echo "Current branch: "${{ github.ref }}" }
+      - name: Print Current Branch
+        run: echo "Currently on branch: ${{ github.ref_name }}"
