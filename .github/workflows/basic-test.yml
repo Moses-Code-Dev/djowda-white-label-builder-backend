@@ -1,21 +1,27 @@
-name: Test Automation
+name: Test Init Repos Script
 
 on:
-  workflow_dispatch:  # Manual trigger via GitHub UI
+  workflow_dispatch:  # Manual trigger for testing
 
 jobs:
-  test-job:
+  test-init-repos:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v3
+    - name: Checkout repo
+      uses: actions/checkout@v3
 
-      - name: Say Hello
-        run: echo "🚀 Hello Djowda Automation World! Workflow is running fine."
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
 
-      - name: List repo files
-        run: ls -la
+    - name: Run init_repos.py
+      run: |
+        echo "Running init_repos.py script..."
+        python3 scripts/init_repos.py
 
-      - name: Print current branch
-        run: echo "Current branch is ${{ github.ref }}"
+    - name: List base_artifact directory
+      run: |
+        echo "Verifying cloned repositories..."
+        ls -R base_artifact
