@@ -1,27 +1,10 @@
-name: White Label - Full Process (Init → Clone → Rename → Push)
+name: White Label - Init, Clone & Rename Test
 
 on:
-  workflow_dispatch:
-    inputs:
-      old-app-name:
-        description: 'Old App Name'
-        required: true
-        default: 'djowda-white-label-user-base'
-      new-app-name:
-        description: 'New App Name'
-        required: true
-        default: 'test'
-      old-package:
-        description: 'Old Package Name'
-        required: true
-        default: 'com.djowda.djowda_white_label_user_base'
-      new-package:
-        description: 'New Package Name'
-        required: true
-        default: 'com.djowda.test'
+  workflow_dispatch:  # Manual trigger for testing
 
 jobs:
-  white-label-process:
+  test-process:
     runs-on: ubuntu-latest
 
     steps:
@@ -53,32 +36,30 @@ jobs:
         echo "==== Verifying generated content ===="
         ls -R generated
 
-    - name: Run android_project_renamer.py (Rename Project & Package)
+    - name: Run android_project_renamer.py (Rename Project)
       run: |
         echo "==== Running android_project_renamer.py ===="
         python3 scripts/android_project_renamer.py \
           --project "./generated/user-app" \
-          --old-app-name "${{ github.event.inputs.old-app-name }}" \
-          --new-app-name "${{ github.event.inputs.new-app-name }}" \
-          --old-package "${{ github.event.inputs.old-package }}" \
-          --new-package "${{ github.event.inputs.new-package }}"
+          --old-app-name "djowda-white-label-user-base" \
+          --new-app-name "test" \
+          --old-package "com.djowda.djowda_white_label_user_base" \
+          --new-package "com.djowda.test"
 
-    - name: Verify final generated folder
+    - name: Clean .git folders (Prevent submodule issue)
       run: |
-        echo "==== Verifying final generated content ===="
-        ls -R generated
+        echo "==== Removing .git folders in generated ===="
+        find ./generated -name ".git" -type d -exec rm -rf {} +
 
-    - name: Push renamed project to output directory
+    - name: Prepare renamed project for commit & push
       run: |
         echo "==== Preparing renamed project for commit & push ===="
-        git config --global user.name "github-actions[bot]"
-        git config --global user.email "github-actions[bot]@users.noreply.github.com"
-        mkdir -p output
-        cp -r generated/* output/
-        cd output
+        cd generated
         git init
-        git remote add origin https://github.com/${{ github.repository }}.git
         git checkout -b renamed-output
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
         git add .
         git commit -m "Add renamed project to output"
-        git push -f origin renamed-output
+        git remote add origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+        git push --force origin renamed-output
