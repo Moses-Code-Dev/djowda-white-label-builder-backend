@@ -1,41 +1,32 @@
 name: White Label - Init, Clone, Rename & Build Debug APK
-
 on:
   workflow_dispatch:  # Manual trigger for testing
-
 jobs:
   build-debug-apk:
     runs-on: ubuntu-latest
-
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v3
-
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.x'
-
     - name: Run init_repos.py (Initialize Base Artifacts)
       run: |
         echo "==== Running init_repos.py ===="
         python3 scripts/init_repos.py
-
     - name: Verify base_artifact folder
       run: |
         echo "==== Verifying base_artifact content ===="
         ls -R base_artifact
-
     - name: Run clone_to_generated.py (Clone to Generated)
       run: |
         echo "==== Running clone_to_generated.py ===="
         python3 scripts/clone_to_generated.py
-
     - name: Verify generated folder
       run: |
         echo "==== Verifying generated content ===="
         ls -R generated
-
     - name: Run android_project_renamer.py (Rename Project)
       run: |
         echo "==== Running android_project_renamer.py ===="
@@ -45,36 +36,46 @@ jobs:
           --new-app-name "test" \
           --old-package "com.djowda.djowda_white_label_user_base" \
           --new-package "com.djowda.test"
-
     - name: Clean .git folders (Prevent submodule issue)
       run: |
         echo "==== Removing .git folders in generated ===="
         find ./generated -name ".git" -type d -exec rm -rf {} +
-
     # ---------- Android SDK + JDK Setup ----------
     - name: Set up JDK 17
       uses: actions/setup-java@v3
       with:
         distribution: 'temurin'
         java-version: '17'
-
+        cache: gradle  # Enable Gradle caching through the Java setup
     - name: Set up Android SDK
       uses: android-actions/setup-android@v2
-
+      
+    # ---------- Setup Gradle Caching ----------
+    - name: Setup Gradle Cache
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+          generated/user-app/.gradle
+          generated/user-app/app/build/intermediates
+          generated/user-app/app/build/tmp
+        key: ${{ runner.os }}-gradle-${{ hashFiles('generated/user-app/**/*.gradle*', 'generated/user-app/**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+          
     # ---------- Build Debug APK ----------
     - name: Build Debug APK
       run: |
         cd generated/user-app
         chmod +x gradlew
-        ./gradlew assembleDebug
-
+        ./gradlew assembleDebug --build-cache
     # ---------- Upload APK as Artifact ----------
     - name: Upload Debug APK
       uses: actions/upload-artifact@v4  # Updated to v4
       with:
         name: debug-apk
         path: generated/user-app/app/build/outputs/apk/debug/app-debug.apk
-
     # ---------- OPTIONAL: Push renamed project (if needed) ----------
     - name: Prepare renamed project for commit & push
       run: |
