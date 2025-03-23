@@ -1,0 +1,62 @@
+#*.iml
+#.gradle
+#/local.properties
+#/.idea/caches
+#/.idea/libraries
+#/.idea/modules.xml
+#/.idea/workspace.xml
+#/.idea/navEditor.xml
+#/.idea/assetWizardSettings.xml
+#.DS_Store
+#/build
+#/captures
+#.externalNativeBuild
+#.cxx
+#local.properties
+
+# Gradle files
+.gradle/
+**/build/
+
+# Local configuration files (SDK paths etc.)
+local.properties
+
+# IDE specific files (Android Studio/IntelliJ)
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# OS specific files
+.DS_Store
+
+# Native builds (C++)
+.cxx/
+.externalNativeBuild/
+
+# Captures folder
+captures/
+
+# Logs
+*.log
+
+# Keystore files (IMPORTANT: Avoid exposing signing keys)
+*.jks
+*.keystore
+
+# Firebase config (Optional: exclude if sensitive info is inside)
+google-services.json
+firebase.json
+
+# Auto-generated or unnecessary files
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+
+# Misc
+*.apk
+*.ap_
+
