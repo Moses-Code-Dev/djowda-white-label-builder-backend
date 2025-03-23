@@ -1,10 +1,10 @@
-name: White Label - Init, Clone & Rename Test
+name: White Label - Init, Clone, Rename & Build Debug APK
 
 on:
   workflow_dispatch:  # Manual trigger for testing
 
 jobs:
-  test-process:
+  build-debug-apk:
     runs-on: ubuntu-latest
 
     steps:
@@ -51,6 +51,30 @@ jobs:
         echo "==== Removing .git folders in generated ===="
         find ./generated -name ".git" -type d -exec rm -rf {} +
 
+    # ---------- Android SDK + JDK Setup ----------
+    - name: Set up JDK 11
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '11'
+
+    - name: Set up Android SDK
+      uses: android-actions/setup-android@v2
+
+    # ---------- Build Debug APK ----------
+    - name: Build Debug APK
+      run: |
+        cd generated/user-app
+        ./gradlew assembleDebug
+
+    # ---------- Upload APK as Artifact ----------
+    - name: Upload Debug APK
+      uses: actions/upload-artifact@v3
+      with:
+        name: debug-apk
+        path: generated/user-app/app/build/outputs/apk/debug/app-debug.apk
+
+    # ---------- OPTIONAL: Push renamed project (if needed) ----------
     - name: Prepare renamed project for commit & push
       run: |
         echo "==== Preparing renamed project for commit & push ===="
