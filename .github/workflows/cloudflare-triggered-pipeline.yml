@@ -1,0 +1,51 @@
+name: Cloudflare Triggered Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      fileName:
+        description: 'Filename or task identifier'
+        required: true
+        default: 'default_task'
+
+jobs:
+  run-tasks:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies (if needed)
+        run: |
+          python -m pip install --upgrade pip
+          # If additional deps needed, add them here
+          # pip install requests
+
+      - name: Run Task One
+        run: |
+          echo "Executing Task One..."
+          python ./scripts/task_one.py
+
+      - name: Run Task Two
+        run: |
+          echo "Executing Task Two..."
+          python ./scripts/task_two.py
+
+      - name: Run Task Three
+        run: |
+          echo "Executing Task Three..."
+          python ./scripts/task_three.py
+
+      - name: Run Task Four
+        run: |
+          echo "Executing Task Four..."
+          python ./scripts/task_four.py
+
+      - name: Done
+        run: echo "All tasks completed!"
